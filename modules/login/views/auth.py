@@ -6,47 +6,44 @@ from config import config
 
 mainDB = config.mainDB
 
+
 def auth_login(params):
     resp = {}
     try:
-        phone_number = params['phone_number']
-        pin = params['pin']
+        customer_xid = params['customer_xid']
 
         check_user = mainDB.user_account.find_one({
-            "phone_number": phone_number,
-            "pin": pin
+            "customer_xid": customer_xid,
         })
 
         if check_user:
-            #generate token
-            user_id = check_user['user_id']
-            access_token = create_access_token(identity=user_id, fresh=True)
-            refresh_token = create_refresh_token(user_id)
-            
-            #save token
-            check_token = mainDB.user_token.find_one({"user_id": user_id})
+            # generate token
+            customer_xid = check_user['customer_xid']
+            access_token = create_access_token(
+                identity=customer_xid, fresh=True)
+
+            # save token
+            check_token = mainDB.user_token.find_one(
+                {"customer_xid": customer_xid})
             if check_token:
                 update_token = update_token_user({
-                    "user_id": user_id,
-                    "access_token": access_token,
-                    "refresh_token": refresh_token
+                    "customer_xid": customer_xid,
+                    "access_token": access_token
                 })
             else:
                 save_token = save_token_user({
-                    "user_id": user_id,
-                    "access_token": access_token,
-                    "refresh_token": refresh_token
+                    "customer_xid": customer_xid,
+                    "access_token": access_token
                 })
-            
-            #response
+
+            # response
             result = {
-                "access_token": access_token,
-                "refresh_token": refresh_token
+                "token": access_token
             }
-            resp['status'] = "SUCCESS"
-            resp['result'] = result
+            resp['status'] = "success"
+            resp['data'] = result
         else:
-            resp['message'] = "Phone number and pin doesn’t match."
+            resp['message'] = "Customer ID doesn’t match."
 
         results = json.dumps(resp)
         return json.loads(results)
@@ -58,20 +55,19 @@ def auth_login(params):
 
         return json.loads(results)
 
+
 def save_token_user(params):
     insert = mainDB.user_token.insert({
-        "user_id": params["user_id"],
-        "access_token": params["access_token"],
-        "refresh_token": params["refresh_token"]
+        "customer_xid": params["customer_xid"],
+        "access_token": params["access_token"]
     })
+
 
 def update_token_user(params):
     update = mainDB.user_token.update({
-        "user_id": params["user_id"]
-    },{
+        "customer_xid": params["customer_xid"]
+    }, {
         "$set": {
-            "access_token": params["access_token"],
-            "refresh_token": params["refresh_token"]
+            "access_token": params["access_token"]
         }
     })
-

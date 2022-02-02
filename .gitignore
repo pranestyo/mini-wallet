@@ -1,0 +1,12 @@
+**config.py
+**/__pycache__
+***/__pycache__
+*.pyc
+nohup.out
+nohup.out.*
+nohup*.out
+*.log
+*.sw?
+!copy_csv_xls.swf
+!copy_csv_xls_pdf.swf
+
